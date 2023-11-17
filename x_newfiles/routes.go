@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"web3/pkg/config"
-	handlers "web3/pkg/handlers"
+	"web3/pkg/handlers"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -25,6 +25,8 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Post("/makepost", handlers.Repo.PostMakePostHandler)
 
+	// Returns a handler that provides access to our
+	// static files
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 

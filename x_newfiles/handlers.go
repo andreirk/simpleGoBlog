@@ -48,18 +48,21 @@ func (m *Repository) LoginHandler(w http.ResponseWriter,
 	render.RenderTemplate(w, r, "login.page.tmpl",
 		&models.PageData{StrMap: strMap})
 }
+
 func (m *Repository) MakePostHandler(w http.ResponseWriter,
 	r *http.Request) {
 	render.RenderTemplate(w, r, "make-post.page.tmpl",
 		&models.PageData{
+			// 15. Create a new empty form
 			Form: forms.New(nil),
 		})
 }
 
-// Handler for posting articles using post
+// 15. Handler for posting articles using post
 func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 	r *http.Request) {
 
+	// Log any parse errors (Now create models.go)
 	err := r.ParseForm()
 	if err != nil {
 		log.Println(err)
@@ -71,14 +74,19 @@ func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 	// w.Write([]byte(blog_title))
 	// w.Write([]byte(blog_article))
 
+	// Store data in aa article object from the form
 	article := models.Article{
 		BlogTitle:   r.Form.Get("blog_title"),
 		BlogArticle: r.Form.Get("blog_article"),
 	}
 
+	// Create form object and pass new values
 	form := forms.New(r.PostForm)
+
+	// Check if a value is provided for each field
 	form.HasValue("blog_title", r)
 
+	// If not valid form store the data and render the page
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["article"] = article

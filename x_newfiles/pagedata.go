@@ -10,6 +10,11 @@ type PageData struct {
 	CSRFToken string
 	Warning   string
 	Error     string
-	Form      *forms.Form
-	Data      map[string]interface{}
+
+	// 15. Create a pointer to our form so form data
+	// will be available everywhere
+	Form *forms.Form
+
+	// 15. Create a place to store any type of data
+	Data map[string]interface{}
 }
