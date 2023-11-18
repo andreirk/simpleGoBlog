@@ -123,3 +123,61 @@ func (m *postgresDBRepo) AuthenticateUser(email, testPassword string) (int, stri
 	// Correct email and pw were entered
 	return id, hashedPW, nil
 }
+
+// 29 Returns one article from database
+func (m *postgresDBRepo) GetAnArticle() (int, int, string, string, error) {
+	// Cancel after 5 seconds
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var id, uID int
+	var aTitle, aContent string
+
+	query := `SELECT id, user_id, title, content FROM posts LIMIT 1`
+
+	row := m.DB.QueryRowContext(ctx, query)
+
+	// Put results in variables
+	err := row.Scan(&id, &uID, &aTitle, &aContent)
+
+	if err != nil {
+		return id, uID, "", "", err
+	}
+
+	// Return data pulled
+	return id, uID, aTitle, aContent, nil
+
+}
+
+// 29 Get 3 articles for home page
+func (m *postgresDBRepo) Get3Articles() (models.ArticleList, error) {
+
+	var artList models.ArticleList
+
+	rows, err := m.DB.Query("SELECT id, user_id, title, content FROM posts ORDER BY id DESC LIMIT $1", 3)
+	if err != nil {
+		// handle this error better than this
+		panic(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id, uID int
+		var title, content string
+		err = rows.Scan(&id, &uID, &title, &content)
+		if err != nil {
+			// handle this error
+			panic(err)
+		}
+		// fmt.Println(id, title)
+		artList.ID = append(artList.ID, id)
+		artList.UserID = append(artList.UserID, uID)
+		artList.Title = append(artList.Title, title)
+		artList.Content = append(artList.Content, content)
+	}
+	// get any error encountered during iteration
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
+	return artList, nil
+}

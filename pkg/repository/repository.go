@@ -12,4 +12,8 @@ type DatabaseRepo interface {
 
 	// 27 Used to authenticate login
 	AuthenticateUser(email, testPassword string) (int, string, error)
+
+	GetAnArticle() (int, int, string, string, error)
+
+	Get3Articles() (models.ArticleList, error)
 }

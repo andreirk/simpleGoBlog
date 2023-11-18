@@ -34,11 +34,45 @@ func NewHandlers(r *Repository) {
 func (m *Repository) HomeHandler(w http.ResponseWriter,
 	r *http.Request) {
 
+	// 29 Get an article from database
+	// id, uid, title, content, err := m.DB.GetAnArticle()
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
+	// fmt.Println("ID : ", id)
+	// fmt.Println("User ID : ", uid)
+	// fmt.Println("Title : ", title)
+	// fmt.Println("Content : ", content)
+
+	// 29 Get 3 posts
+	// will hold struct with arrays of values
+	var artList models.ArticleList
+	artList, err := m.DB.Get3Articles()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	for i := range artList.Content {
+		fmt.Println(artList.Content[i])
+	}
+
 	m.App.Session.Put(r.Context(),
 		"userid", "derekbanas")
 
+	// Used to pass articleList to the template
+	data := make(map[string]interface{})
+	data["articleList"] = artList
+
+	// Render template with data
 	render.RenderTemplate(w, r, "home.page.tmpl",
-		&models.PageData{})
+		&models.PageData{
+			Data: data,
+		})
+
+	// render.RenderTemplate(w, r, "home.page.tmpl",
+	// 	&models.PageData{})
 }
 
 func (m *Repository) AboutHandler(w http.ResponseWriter,
@@ -57,7 +91,7 @@ func (m *Repository) LoginHandler(w http.ResponseWriter,
 func (m *Repository) MakePostHandler(w http.ResponseWriter,
 	r *http.Request) {
 
-	// If user isn't logged in redirect to login
+	// 28 If user isn't logged in redirect to login
 	if !m.App.Session.Exists(r.Context(), "user_id") {
 		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 	}
@@ -83,11 +117,14 @@ func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 		return
 	}
 
+	// 29 Get user id of logged in user
+	uID := (m.App.Session.Get(r.Context(), "user_id")).(int)
+
 	// 26 Update this as a Post model
 	article := models.Post{
 		Title:   r.Form.Get("blog_title"),
 		Content: r.Form.Get("blog_article"),
-		UserID:  1,
+		UserID:  int(uID), // 29 Add user id to article
 	}
 
 	form := forms.New(r.PostForm)
@@ -96,8 +133,6 @@ func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 
 	form.MinLength("blog_title", 5, r)
 	form.MinLength("blog_article", 5, r)
-
-	// form.IsEmail("email")
 
 	if !form.Valid() {
 		data := make(map[string]interface{})
