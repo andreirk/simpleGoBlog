@@ -5,11 +5,32 @@ import (
 	"html/template"
 	"net/http"
 	"web3/models"
+	"web3/pkg/config"
+
+	"github.com/justinas/nosurf"
 )
 
 var tmplCache = make(map[string]*template.Template)
 
-func RenderTemplate(w http.ResponseWriter,
+// 28 Pass AppConfig
+var app *config.AppConfig
+
+func NewAppConfig(a *config.AppConfig) {
+	app = a
+}
+
+func AddCSRFData(pd *models.PageData, r *http.Request) *models.PageData {
+	pd.CSRFToken = nosurf.Token(r)
+
+	// 28 Add verification of login to pages
+	if app.Session.Exists(r.Context(), "user_id") {
+		pd.IsAuthenticated = 1
+	}
+
+	return pd
+}
+
+func RenderTemplate(w http.ResponseWriter, r *http.Request,
 	t string, pd *models.PageData) {
 	var tmpl *template.Template
 	var err error
@@ -23,6 +44,9 @@ func RenderTemplate(w http.ResponseWriter,
 		fmt.Println("Template in cache")
 	}
 	tmpl = tmplCache[t]
+
+	pd = AddCSRFData(pd, r)
+
 	err = tmpl.Execute(w, pd)
 	if err != nil {
 		fmt.Println(err)

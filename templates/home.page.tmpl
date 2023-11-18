@@ -1,13 +1,29 @@
 {{template "base" .}}
 {{define "content"}}
 
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <h1>Home</h1>
-            <p>Thisis the best web page ever</p>
-        </div>
-    </div>
-</div>
+<article class="blog-post">
+
+        {{/* Get all map data from articleList struct */}}
+        {{$res := index .Data "articleList"}}
+
+        {{/* Get title using its index */}}
+        <h2 class="blog-post-title mb-1">{{index $res.Title 0}}</h2>
+
+        <p>{{index $res.Content 0}}</p>
+        <hr>
+
+        {{/* Get title using its index */}}
+        <h2 class="blog-post-title mb-1">{{index $res.Title 1}}</h2>
+
+        <p>{{index $res.Content 1}}</p>
+        <hr>
+
+        {{/* Get title using its index */}}
+        <h2 class="blog-post-title mb-1">{{index $res.Title 2}}</h2>
+
+        <p>{{index $res.Content 2}}</p>
+        <hr>
+        
+      </article>
 
 {{end}}
