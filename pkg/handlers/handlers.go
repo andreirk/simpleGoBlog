@@ -50,9 +50,15 @@ func (m *Repository) LoginHandler(w http.ResponseWriter,
 }
 func (m *Repository) MakePostHandler(w http.ResponseWriter,
 	r *http.Request) {
+
+	var emptyArticle models.Article
+	data := make(map[string]interface{})
+	data["article"] = emptyArticle
+
 	render.RenderTemplate(w, r, "make-post.page.tmpl",
 		&models.PageData{
 			Form: forms.New(nil),
+			Data: data,
 		})
 }
 
@@ -66,18 +72,19 @@ func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 		return
 	}
 
-	// blog_title := r.Form.Get("blog_title")
-	// blog_article := r.Form.Get("blog_article")
-	// w.Write([]byte(blog_title))
-	// w.Write([]byte(blog_article))
-
 	article := models.Article{
 		BlogTitle:   r.Form.Get("blog_title"),
 		BlogArticle: r.Form.Get("blog_article"),
 	}
 
 	form := forms.New(r.PostForm)
-	form.HasValue("blog_title", r)
+
+	form.HasRequired("blog_title", "blog_article")
+
+	form.MinLength("blog_title", 5, r)
+	form.MinLength("blog_article", 5, r)
+
+	// form.IsEmail("email")
 
 	if !form.Valid() {
 		data := make(map[string]interface{})
@@ -90,6 +97,30 @@ func (m *Repository) PostMakePostHandler(w http.ResponseWriter,
 			})
 		return
 	}
+	m.App.Session.Put(r.Context(), "article", article)
+	http.Redirect(w, r, "/article-received",
+		http.StatusSeeOther)
+}
+
+func (m *Repository) ArticleReceived(w http.ResponseWriter, r *http.Request) {
+	article, ok := m.App.Session.Get(r.Context(),
+		"article").(models.Article)
+	if !ok {
+		log.Println("Can't get data from session")
+
+		m.App.Session.Put(r.Context(), "error", "Can't get data from session")
+
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+
+		return
+	}
+	data := make(map[string]interface{})
+	data["article"] = article
+
+	render.RenderTemplate(w, r, "article-received.page.tmpl",
+		&models.PageData{
+			Data: data,
+		})
 }
 
 func (m *Repository) PageHandler(w http.ResponseWriter,
