@@ -5,14 +5,28 @@ import (
 	"html/template"
 	"net/http"
 	"web3/models"
+	"web3/pkg/config"
 
 	"github.com/justinas/nosurf"
 )
 
 var tmplCache = make(map[string]*template.Template)
 
+// 28 Pass AppConfig
+var app *config.AppConfig
+
+func NewAppConfig(a *config.AppConfig) {
+	app = a
+}
+
 func AddCSRFData(pd *models.PageData, r *http.Request) *models.PageData {
 	pd.CSRFToken = nosurf.Token(r)
+
+	// 28 Add verification of login to pages
+	if app.Session.Exists(r.Context(), "user_id") {
+		pd.IsAuthenticated = 1
+	}
+
 	return pd
 }
 
