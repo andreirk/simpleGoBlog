@@ -8,6 +8,11 @@ GOPATH="$(GOBASE)/vendor:$(GOBASE)"
 GOBIN=$(GOBASE)/bin
 GOFILES=$(wildcard *.go)
 
+POSTGRES_USER_NAME=someName
+POSTGRES_PASS=somePass
+POSTGRES_DB_NAME=database_name
+
+
 # Redirect error output to a file, so we can show it in development mode.
 STDERR=/tmp/.$(PROJECTNAME)-stderr.txt
 
@@ -80,11 +85,11 @@ go-clean:
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go clean
 
 ## gloang migrate
-migration_up: migrate -path database/migration/ -database "postgresql://username:secretkey@localhost:5432/database_name?sslmode=disable" -verbose up
+migration_up: migrate -path database/migration/ -database "postgresql://$(POSTGRES_USER_NAME):$(POSTGRES_PASS)@localhost:5432/$(POSTGRES_DB_NAME)?sslmode=disable" -verbose up
 
-migration_down: migrate -path database/migration/ -database "postgresql://username:secretkey@localhost:5432/database_name?sslmode=disable" -verbose down
+migration_down: migrate -path database/migration/ -database "postgresql://$(POSTGRES_USER_NAME):$(POSTGRES_PASS)@localhost:5432/$(POSTGRES_DB_NAME)?sslmode=disable" -verbose down
 
-migration_fix: migrate -path database/migration/ -database "postgresql://username:secretkey@localhost:5432/database_name?sslmode=disable" force VERSION
+migration_fix: migrate -path database/migration/ -database "postgresql://$(POSTGRES_USER_NAME):$(POSTGRES_PASS)@localhost:5432/$(POSTGRES_DB_NAME)?sslmode=disable" force VERSION
 
 .PHONY: help
 all: help
